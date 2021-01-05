@@ -1,0 +1,249 @@
+---
+title: "visr meta 20201224"
+author: "Sofia Danna"
+date: "December 24, 2020"
+output: html_document
+---
+
+
+# Mise en place
+
+* Analysis: 
+    + The following tutorial was used for analyses: <https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/> 
+    + Main analyses are random effects models; subgroup analyses are fixed effects models.
+
+* Data
+    + The visr dataframe was created based on ORs collected from the vocational interventions systematic review. Different estimates may overlap in different analyses, so columns beginning with rep_ were added to help eliminate estimates that need to be removed for each analysis (i.e., rep_xxx for the xxx subgroup analysis of joint estimates).
+
+```{r}
+# On Sofia's Douglas Windows computer
+#neet <- read.csv("C:/Users/dansof/Dropbox/PEPP new/NEET meta-analysis/metaanalysis/neet 20200525.csv")
+
+# On Sofia's personal Mac
+visr <- read.csv("~/Dropbox/PEPP/vocational interventions SR - VISR/6 Analysis/VISR meta-analysis/visr_meta/ORs 20210105.csv")
+```
+
+checking out the variables in the dataframe
+```{r}
+visr
+str(visr)
+```
+
+installing and loading meta package
+```{r message=FALSE, warning=FALSE}
+install.packages("meta", repos = "http://cran.us.r-project.org")
+install.packages("dplyr", repos = "http://cran.us.r-project.org")
+library(meta)
+library(metafor)
+library(dplyr)
+```
+
+Parameter       | Function
+----------------|---------------------------------------------------------------------------------
+TE	            | This tells R to use the TE column to retrieve the effect sizes for each study
+seTE	          | This tells R to use the seTE column to retrieve the standard error for each study
+data=	          | After =, paste the name of your dataset here
+studlab=paste()	| This tells the function were the labels for each study are stored. If you named the spreadsheet columns as advised, this should be studlab=paste(Author)
+comb.fixed=	    | Whether to use a fixed-effects-model
+comb.random=	  | Whether to use a random-effects-model. This has to be set to TRUE
+method.tau=	    | Which estimator to use for the between-study variance
+hakn=	          | Whether to use the Knapp-Hartung method
+prediction=	    | Whether to print a prediction interval for the effect of future studies based on present evidence
+sm=	            | The summary measure we want to calculate. We can either calculate the mean difference (MD) or Hedges’ g (SMD)
+
+Using the instructions from the tutorial by Mathias Harrer (url above),
+
+instead of | we will use
+-----------|-----------
+"Author"   | "study"
+"TE"       | "OR_ln"
+"seTE"     | "SE"
+
+# Analyses: Main outcomes
+
+## EMPLOYMENT
+
+```{r}
+emp <- filter(visr, emp==1) #  & is.na(rep_emp)==TRUE)
+
+emp
+
+meta.emp <- metagen(OR_ln,
+                    SE,
+                    data=emp,
+                    studlab=paste(study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.emp
+
+forest(meta.emp)
+```
+
+***
+
+## EDUCATION 
+
+```{r}
+edu <- filter(visr, edu==1) #& is.na(rep_edu))
+
+edu
+
+meta.edu <- metagen(OR_ln,
+                     SE,
+                     data=edu,
+                     studlab=paste(study),
+                     comb.fixed = FALSE,
+                     comb.random = TRUE,
+                     method.tau = "DL",
+                     hakn = FALSE,
+                     prediction=FALSE,
+                     sm="OR")
+
+meta.edu
+
+forest(meta.edu)
+```
+
+***
+
+## JOINT
+
+```{r}
+joint <- filter(visr, emp_edu==1) #is.na(rep_joint))
+
+joint
+
+meta.joint <- metagen(OR_ln,
+                    SE,
+                    data=joint,
+                    studlab=paste(study),
+                    comb.fixed = FALSE,
+                    comb.random = TRUE,
+                    method.tau = "DL",
+                    hakn = FALSE,
+                    prediction=FALSE,
+                    sm="OR")
+
+meta.joint
+
+forest(meta.joint)
+```
+
+### EDUCATION - design
+
+```{r}
+joint.des <- filter(visr, emp_edu==1) #is.na(rep_joint))
+
+joint.des
+
+meta.joint.des <- metagen(OR_ln,
+                        SE,
+                        data=joint.des,
+                        studlab=paste(study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.joint.des<-update.meta(meta.joint.des,
+                          byvar=design, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.joint.des
+
+forest(meta.joint.des)
+```
+
+### JOINT - intervention
+
+```{r}
+joint.inter <- filter(visr, emp_edu==1)
+
+joint.inter
+
+meta.joint.inter <- metagen(OR_ln,
+                        SE,
+                        data=joint.inter,
+                        studlab=paste(study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.joint.inter<-update.meta(meta.joint.inter, 
+                          byvar=intervention, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.joint.inter
+
+forest(meta.joint.inter)
+```
+
+### JOINT - mental health problem
+
+```{r}
+joint.mh <- filter(visr, emp_edu==1)
+
+joint.mh
+
+meta.joint.mh <- metagen(OR_ln,
+                        SE,
+                        data=joint.mh,
+                        studlab=paste(study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.joint.mh<-update.meta(meta.joint.mh, 
+                          byvar=mhp, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.joint.mh
+
+forest(meta.joint.mh)
+```
+
+### JOINT - control
+
+```{r}
+joint.con <- filter(visr, emp_edu==1)
+
+joint.con
+
+meta.joint.con <- metagen(OR_ln,
+                        SE,
+                        data=joint.con,
+                        studlab=paste(study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.joint.con<-update.meta(meta.joint.con, 
+                          byvar=control, 
+                          comb.random = F, 
+                          comb.fixed = T)
+
+meta.joint.con
+
+forest(meta.joint.con)
+```
+
+***

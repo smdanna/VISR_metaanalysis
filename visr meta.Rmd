@@ -1,8 +1,10 @@
 ---
-title: "visr meta 20201224"
+title: "VISR meta-analysis"
 author: "Sofia Danna"
-date: "December 24, 2020"
-output: html_document
+date: "January 11, 2021"
+output: 
+  html_document:
+    df_print: paged
 ---
 
 
@@ -13,14 +15,11 @@ output: html_document
     + Main analyses are random effects models; subgroup analyses are fixed effects models.
 
 * Data
-    + The visr dataframe was created based on ORs collected from the vocational interventions systematic review. Different estimates may overlap in different analyses, so columns beginning with rep_ were added to help eliminate estimates that need to be removed for each analysis (i.e., rep_xxx for the xxx subgroup analysis of joint estimates).
+    + The visr dataframe was created based on ORs from the vocational interventions systematic review, both collected from studies (generated = 0) and calculated from 2x2 table data obtained from the studies (generated = 1). Different estimates may overlap in different analyses, so columns beginning with rep_ were added to help eliminate estimates that need to be removed for each analysis (i.e., rep_joint.des for the design subgroup analysis of joint employment/education estimates).
 
 ```{r}
-# On Sofia's Douglas Windows computer
-#neet <- read.csv("C:/Users/dansof/Dropbox/PEPP new/NEET meta-analysis/metaanalysis/neet 20200525.csv")
-
-# On Sofia's personal Mac
-visr <- read.csv("~/Dropbox/PEPP/vocational interventions SR - VISR/6 Analysis/VISR meta-analysis/visr_meta/ORs 20210105.csv")
+# Loading data
+visr <- read.csv("~/Dropbox/PEPP/vocational interventions SR - VISR/6 Analysis/VISR meta-analysis/visr_meta/ORs 20210111.csv")
 ```
 
 checking out the variables in the dataframe
@@ -64,7 +63,7 @@ instead of | we will use
 ## EMPLOYMENT
 
 ```{r}
-emp <- filter(visr, emp==1) #  & is.na(rep_emp)==TRUE)
+emp <- filter(visr, emp==1 & is.na(rep_emp))
 
 emp
 
@@ -89,7 +88,7 @@ forest(meta.emp)
 ## EDUCATION 
 
 ```{r}
-edu <- filter(visr, edu==1) #& is.na(rep_edu))
+edu <- filter(visr, edu==1 & is.na(rep_edu))
 
 edu
 
@@ -114,7 +113,7 @@ forest(meta.edu)
 ## JOINT
 
 ```{r}
-joint <- filter(visr, emp_edu==1) #is.na(rep_joint))
+joint <- filter(visr, is.na(rep_joint))
 
 joint
 
@@ -137,7 +136,7 @@ forest(meta.joint)
 ### EDUCATION - design
 
 ```{r}
-joint.des <- filter(visr, emp_edu==1) #is.na(rep_joint))
+joint.des <- filter(visr, is.na(rep_joint.des))
 
 joint.des
 
@@ -165,7 +164,7 @@ forest(meta.joint.des)
 ### JOINT - intervention
 
 ```{r}
-joint.inter <- filter(visr, emp_edu==1)
+joint.inter <- filter(visr, is.na(rep_joint.inter))
 
 joint.inter
 
@@ -193,7 +192,7 @@ forest(meta.joint.inter)
 ### JOINT - mental health problem
 
 ```{r}
-joint.mh <- filter(visr, emp_edu==1)
+joint.mh <- filter(visr, is.na(rep_joint.mh))
 
 joint.mh
 
@@ -221,7 +220,7 @@ forest(meta.joint.mh)
 ### JOINT - control
 
 ```{r}
-joint.con <- filter(visr, emp_edu==1)
+joint.con <- filter(visr, is.na(rep_joint.con))
 
 joint.con
 

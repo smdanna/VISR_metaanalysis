@@ -1,7 +1,7 @@
 ---
 title: "VISR meta-analysis"
 author: "Sofia Danna"
-date: "January 11, 2021"
+date: "January 25, 2021"
 output: 
   html_document:
     df_print: paged
@@ -12,14 +12,14 @@ output:
 
 * Analysis: 
     + The following tutorial was used for analyses: <https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/> 
-    + Main analyses are random effects models; subgroup analyses are fixed effects models.
+    + Main analyses and subgroup analyses are random effects models.
 
 * Data
     + The visr dataframe was created based on ORs from the vocational interventions systematic review, both collected from studies (generated = 0) and calculated from 2x2 table data obtained from the studies (generated = 1). Different estimates may overlap in different analyses, so columns beginning with rep_ were added to help eliminate estimates that need to be removed for each analysis (i.e., rep_joint.des for the design subgroup analysis of joint employment/education estimates).
 
 ```{r}
 # Loading data
-visr <- read.csv("~/Dropbox/PEPP/vocational interventions SR - VISR/6 Analysis/VISR meta-analysis/visr_meta/ORs 20210111.csv")
+visr <- read.csv("~/Dropbox/PEPP/vocational interventions SR - VISR/6 Analysis/VISR meta-analysis/visr_meta/ORs 20210125.csv")
 ```
 
 checking out the variables in the dataframe
@@ -133,7 +133,30 @@ meta.joint
 forest(meta.joint)
 ```
 
-### EDUCATION - design
+### JOINT - interactions
+
+```{r}
+joint.interaction <- filter(visr, interaction==1)
+
+joint.interaction
+
+meta.joint.interaction <- metagen(OR_ln,
+                        SE,
+                        data=joint.interaction,
+                        studlab=paste(study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.joint.interaction
+
+forest(meta.joint.interaction)
+```
+
+### JOINT - design
 
 ```{r}
 joint.des <- filter(visr, is.na(rep_joint.des))
@@ -153,8 +176,8 @@ meta.joint.des <- metagen(OR_ln,
 
 meta.joint.des<-update.meta(meta.joint.des,
                           byvar=design, 
-                          comb.random = F, 
-                          comb.fixed = T)
+                          comb.random = T, 
+                          comb.fixed = F)
 
 meta.joint.des
 
@@ -181,8 +204,8 @@ meta.joint.inter <- metagen(OR_ln,
 
 meta.joint.inter<-update.meta(meta.joint.inter, 
                           byvar=intervention, 
-                          comb.random = F, 
-                          comb.fixed = T)
+                          comb.random = T, 
+                          comb.fixed = F)
 
 meta.joint.inter
 
@@ -209,8 +232,8 @@ meta.joint.mh <- metagen(OR_ln,
 
 meta.joint.mh<-update.meta(meta.joint.mh, 
                           byvar=mhp, 
-                          comb.random = F, 
-                          comb.fixed = T)
+                          comb.random = T, 
+                          comb.fixed = F)
 
 meta.joint.mh
 
@@ -237,12 +260,68 @@ meta.joint.con <- metagen(OR_ln,
 
 meta.joint.con<-update.meta(meta.joint.con, 
                           byvar=control, 
-                          comb.random = F, 
-                          comb.fixed = T)
+                          comb.random = T, 
+                          comb.fixed = F)
 
 meta.joint.con
 
 forest(meta.joint.con)
+```
+
+### JOINT - time
+
+```{r}
+joint.time <- filter(visr, is.na(rep_joint.time))
+
+joint.time
+
+meta.joint.time <- metagen(OR_ln,
+                        SE,
+                        data=joint.time,
+                        studlab=paste(study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.joint.time<-update.meta(meta.joint.time, 
+                          byvar=time, 
+                          comb.random = T, 
+                          comb.fixed = F)
+
+meta.joint.time
+
+forest(meta.joint.time)
+```
+
+### JOINT - risk of bias
+
+```{r}
+joint.rob <- filter(visr, is.na(rep_joint.rob))
+
+joint.rob
+
+meta.joint.rob <- metagen(OR_ln,
+                        SE,
+                        data=joint.rob,
+                        studlab=paste(study),
+                        comb.fixed = FALSE,
+                        comb.random = TRUE,
+                        method.tau = "DL",
+                        hakn = FALSE,
+                        prediction=FALSE,
+                        sm="OR")
+
+meta.joint.rob<-update.meta(meta.joint.rob, 
+                          byvar=rob, 
+                          comb.random = T, 
+                          comb.fixed = F)
+
+meta.joint.rob
+
+forest(meta.joint.rob)
 ```
 
 ***
